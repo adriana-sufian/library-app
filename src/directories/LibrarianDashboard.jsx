@@ -58,16 +58,37 @@ export default function LibrarianDashboard() {
     saveLoans(updated);
   };
 
-  return (
-    <div className="max-w-2xl mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Library Book Management</h1>
+  // for librarians to see borrow requests
+  const [requests, setRequests] = useState([]);
 
-      <BookForm onSubmit={handleSave} book={editingBook} />
-      <BookList books={books} onEdit={handleEdit} onDelete={handleDelete} />
+  useEffect(() => {
+    setBooks(getBooks());
+    setLoans(getLoans());
+    const existingRequests = JSON.parse(localStorage.getItem("borrowRequests")) || [];
+    setRequests(existingRequests);
+  }, []);
 
-      <h2 className="text-xl font-semibold mt-8 mb-2">Loan Management</h2>
-      <LoanForm onSubmit={handleSaveLoan} books={books} loan={editingLoan} />
-      <LoanList loans={loans} books={books} onEdit={setEditingLoan} onDelete={handleDeleteLoan} />
-    </div>
-  );
-}
+return (
+  <div className="max-w-2xl mx-auto p-4">
+    <h1 className="text-2xl font-bold mb-4">Library Book Management</h1>
+    <BookForm onSubmit={handleSave} book={editingBook} />
+    <BookList books={books} onEdit={handleEdit} onDelete={handleDelete} />
+    <h2 className="text-xl font-semibold mt-8 mb-2">Loan Management</h2>
+    <LoanForm onSubmit={handleSaveLoan} books={books} loan={editingLoan} />
+    <LoanList loans={loans} books={books} onEdit={setEditingLoan} onDelete={handleDeleteLoan} />
+    <h2 className="text-xl font-semibold mt-8 mb-2">Borrow Requests</h2>
+    {requests.map((req) => (
+      <div key={req.id} className="border p-4 rounded mb-2 bg-yellow-50">
+        <p><strong>Member:</strong> {req.memberName}</p>
+        <p><strong>Date:</strong> {req.requestDate}</p>
+        <p><strong>Books:</strong></p>
+        <ul className="list-disc list-inside ml-4">
+          {req.bookIds.map(id => {
+            const book = books.find(b => b.id === id);
+            return <li key={id}>{book ? book.title : "(Unknown Book)"}</li>;
+          })}
+        </ul>
+      </div>
+    ))}
+  </div>
+);}
