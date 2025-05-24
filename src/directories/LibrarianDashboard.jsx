@@ -94,6 +94,49 @@ export default function LibrarianDashboard() {
   saveBooks(updatedBooks);
 };
 
+// loan management - borrow request
+const handleApproveRequest = (request) => {
+  const newLoans = request.bookIds.map(bookId => {
+    const loanDate = new Date();
+    const dueDate = new Date();
+    dueDate.setDate(loanDate.getDate() + 14);
+
+    return {
+      id: uuidv4(),
+      bookId,
+      memberName: request.memberName,
+      loanDate: loanDate.toISOString().split("T")[0],
+      dueDate: dueDate.toISOString().split("T")[0],
+      status: "Active",
+    };
+  });
+
+  // Update loans
+  const updatedLoans = [...loans, ...newLoans];
+  setLoans(updatedLoans);
+  saveLoans(updatedLoans);
+
+  // Update books (decrease copies)
+  const updatedBooks = books.map(book => {
+    if (request.bookIds.includes(book.id) && book.copies > 0) {
+      const newCopies = book.copies - 1;
+      return {
+        ...book,
+        copies: newCopies,
+        available: newCopies > 0,
+      };
+    }
+    return book;
+  });
+  setBooks(updatedBooks);
+  saveBooks(updatedBooks);
+
+  // Remove request
+  const updatedRequests = requests.filter(r => r.id !== request.id);
+  setRequests(updatedRequests);
+  localStorage.setItem("borrowRequests", JSON.stringify(updatedRequests));
+};
+
 return (
   <div className="max-w-2xl mx-auto p-4">
     <h1 className="text-2xl font-bold mb-4">Library Book Management</h1>
@@ -114,6 +157,12 @@ return (
             return <li key={id}>{book ? book.title : "(Unknown Book)"}</li>;
           })}
         </ul>
+        <button
+          onClick={() => handleApproveRequest(req)}
+          className="mt-2 inline-block bg-blue-600 text-white px-3 py-1 rounded"
+        >
+          Approve Request
+        </button>
       </div>
     ))}
   </div>

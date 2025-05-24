@@ -46,19 +46,6 @@ export default function MemberDashboard() {
         }
     localStorage.setItem("borrowRequests", JSON.stringify([...existing, request]));
 
-    // reduce number of copies after borrow request submitted
-    selectedBooks.forEach(bookId => {
-    const book = booksFromStorage.find(b => b.id === bookId);
-    if (book && book.copies > 0) {
-        book.copies -= 1;
-        if (book.copies === 0) {
-        book.available = false;
-        }
-    }
-    });
-
-    localStorage.setItem("books", JSON.stringify(booksFromStorage));
-
     // Clear form
     setSelectedBooks([]);
     setMemberName("");
