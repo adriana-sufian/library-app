@@ -1,4 +1,4 @@
-export default function LoanList({ loans, books, onEdit, onDelete }) {
+export default function LoanList({ loans, books, onEdit, onDelete, onReturn }) {
   const getBookTitle = (id) => books.find(b => b.id === id)?.title || "Unknown";
 
   return (
@@ -13,6 +13,15 @@ export default function LoanList({ loans, books, onEdit, onDelete }) {
           <div className="space-x-2 mt-2">
             <button onClick={() => onEdit(loan)} className="text-blue-600">Edit</button>
             <button onClick={() => onDelete(loan.id)} className="text-red-600">Delete</button>
+
+            {loan.status === "Active" && (
+              <button
+                onClick={() => onReturn(loan)}
+                className="text-green-600 underline"
+              >
+                Mark as Returned
+              </button>
+            )}
           </div>
         </div>
       ))}
