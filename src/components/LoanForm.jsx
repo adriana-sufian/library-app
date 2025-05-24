@@ -57,8 +57,6 @@ export default function LoanForm({ onSubmit, books, loan , onCancel
       <input name="dueDate" type="date" value={form.dueDate} disabled />
       <select name="status" value={form.status} onChange={handleChange}>
         <option>Active</option>
-        <option>Returned</option>
-        <option>Overdue</option>
       </select>
       <button 
       type="submit" 
