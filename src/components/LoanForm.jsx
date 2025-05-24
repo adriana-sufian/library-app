@@ -42,15 +42,25 @@ export default function LoanForm({ onSubmit, books, loan , onCancel
     e.preventDefault();
     if (!form.bookId || !form.memberName) return alert("Missing fields");
     onSubmit(form);
+    setForm({
+      bookId: "",
+      memberName: "",
+      loanDate: new Date().toISOString().split("T")[0],
+      dueDate: "",
+      status: "Active",
+    });
   };
 
   return (
     <form onSubmit={handleSubmit} className="p-4 border rounded bg-white shadow space-y-4">
       <select name="bookId" value={form.bookId} onChange={handleChange} required>
         <option value="">Select Book</option>
-        {books.map(b => (
-          <option key={b.id} value={b.id}>{b.title}</option>
-        ))}
+          {books
+            .filter(b => (b.totalCopies - (b.onHoldCopies || 0)) > 0)
+            .map(b => (
+              <option key={b.id} value={b.id}>{b.title}</option>
+            ))
+          }
       </select>
       <input name="memberName" placeholder="Member Name" value={form.memberName} onChange={handleChange} required />
       <input name="loanDate" type="date" value={form.loanDate} onChange={handleChange} required />

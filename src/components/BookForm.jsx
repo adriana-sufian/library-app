@@ -7,7 +7,7 @@ export default function BookForm({ onSubmit, book, onCancel }) {
     isbn: "", 
     year: "", 
     genre: "", 
-    copies: 1, 
+    totalCopies: 1, 
     available: true
   });
 
@@ -23,7 +23,7 @@ export default function BookForm({ onSubmit, book, onCancel }) {
         isbn: "", 
         year: "", 
         genre: "", 
-        copies: 1, 
+        totalCopies: 1, 
         available: true
       });
     }
@@ -37,6 +37,17 @@ export default function BookForm({ onSubmit, book, onCancel }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     onSubmit(form);
+    // Reset form
+    setForm({
+      id: "",
+      title: "",
+      author: "",
+      isbn: "",
+      year: "",
+      genre: "",
+      totalCopies: 1,
+      available: true,
+    });
   };
 
   return (
@@ -46,7 +57,7 @@ export default function BookForm({ onSubmit, book, onCancel }) {
       <input name="isbn" placeholder="ISBN" value={form.isbn} onChange={handleChange} required />
       <input name="year" type="number" placeholder="Year" value={form.year} onChange={handleChange} required />
       <input name="genre" placeholder="Genre" value={form.genre} onChange={handleChange} required />
-      <input name="copies" type="number" min="1" value={form.copies} onChange={handleChange} required />
+      <input name="totalCopies" type="number" min="1" value={form.totalCopies} onChange={handleChange} required />
       <label>
         <input type="checkbox" name="available" checked={form.available} onChange={handleChange} /> Available
       </label>

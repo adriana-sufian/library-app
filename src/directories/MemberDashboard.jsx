@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getAvailableBooks } from "../utils/dataService";
+import { getAvailableBooks, recalculateBookHoldCounts } from "../utils/dataService";
 import { v4 as uuidv4 } from "uuid";
 import AvailableBookList from "../components/AvailableBookList";
 
@@ -10,7 +10,9 @@ export default function MemberDashboard() {
   const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
-    setBooks(getAvailableBooks());
+    const updatedBooks = recalculateBookHoldCounts();
+    const availableBooks = updatedBooks.filter(b => (b.totalCopies - (b.onHoldCopies || 0)) > 0);
+    setBooks(availableBooks);
   }, []);
 
   const handleToggleBook = (bookId) => {
@@ -26,6 +28,17 @@ export default function MemberDashboard() {
 
     const booksFromStorage = JSON.parse(localStorage.getItem("books")) || [];
 
+    const unavailableBooks = selectedBooks.filter(bookId => {
+      const book = booksFromStorage.find(b => b.id === bookId);
+      const onHold = book.onHoldCopies || 0;
+      const available = (book.totalCopies || 0) - onHold;
+      return available < 1;
+    });
+
+    if (unavailableBooks.length > 0) {
+      return alert("One or more selected books are no longer available.");
+    }
+
     const request = {
       id: uuidv4(),
       memberName,
@@ -34,22 +47,18 @@ export default function MemberDashboard() {
     };
 
     const existing = JSON.parse(localStorage.getItem("borrowRequests")) || [];
-    
-    // doesnt let users borrow unavailable books
-    const unavailableBooks = selectedBooks.filter(bookId => {
-    const book = booksFromStorage.find(b => b.id === bookId);
-        return !book || book.copies <= 0;
-        });
-
-        if (unavailableBooks.length > 0) {
-        return alert("One or more selected books are no longer available.");
-        }
     localStorage.setItem("borrowRequests", JSON.stringify([...existing, request]));
 
+    alert("Borrow request submitted!");
+
     // Clear form
-    setSelectedBooks([]);
     setMemberName("");
-    setSuccessMessage("Borrow request submitted successfully!");
+    setSelectedBooks([]);
+
+    // Refresh available books immediately
+    const updatedBooks = recalculateBookHoldCounts();
+    const availableBooks = updatedBooks.filter(b => (b.totalCopies - (b.onHoldCopies || 0)) > 0);
+    setBooks(availableBooks);
   };
 
   return (

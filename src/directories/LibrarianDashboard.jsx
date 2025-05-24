@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getBooks, saveBooks } from "../utils/dataService";
+import { getBooks, saveBooks, recalculateBookHoldCounts } from "../utils/dataService";
 import { getLoans, saveLoans } from "../utils/loanService";
 import BookForm from "../components/BookForm";
 import BookList from "../components/BookList";
@@ -73,6 +73,8 @@ export default function LibrarianDashboard() {
       
       setBooks(updatedBooks);
       saveBooks(updatedBooks);
+      const resyncedBooks = recalculateBookHoldCounts();
+      setBooks(resyncedBooks);
     }
   };
 
@@ -86,7 +88,8 @@ export default function LibrarianDashboard() {
   const [requests, setRequests] = useState([]);
 
   useEffect(() => {
-    setBooks(getBooks());
+    const updatedBooks = recalculateBookHoldCounts();
+    setBooks(updatedBooks);
     setLoans(getLoans());
     const existingRequests = JSON.parse(localStorage.getItem("borrowRequests")) || [];
     setRequests(existingRequests);
@@ -94,29 +97,33 @@ export default function LibrarianDashboard() {
 
   // return loans
   const handleReturnLoan = (loan) => {
-    // Update loan status
+    // 1. Update loan status
     const updatedLoans = loans.map(l =>
       l.id === loan.id ? { ...l, status: "Returned" } : l
     );
     setLoans(updatedLoans);
     saveLoans(updatedLoans);
 
-    // Update book copies
+    // 2. Increment book copy count
     const updatedBooks = books.map(b => {
       if (b.id === loan.bookId) {
-        const newCopies = b.copies + 1;
+        const newCopies = (b.totalCopies || 0) > 0 ? b.totalCopies : b.copies + 1;
         return {
           ...b,
-          copies: newCopies,
-          available: true,
+          copies: newCopies,  // optional legacy field
+          totalCopies: b.totalCopies || newCopies,
         };
       }
       return b;
     });
 
-  setBooks(updatedBooks);
-  saveBooks(updatedBooks);
-};
+    saveBooks(updatedBooks);
+
+    // 3. Recalculate onHoldCounts + update UI
+    const resyncedBooks = recalculateBookHoldCounts();
+    setBooks(resyncedBooks);
+  };
+
 
 // loan management - borrow request
 const handleApproveRequest = (request) => {
@@ -164,6 +171,43 @@ const handleApproveRequest = (request) => {
   // edit , cancel list
   const handleCancelEdit = () => setEditingBook(null);
   const handleCancelLoanEdit = () => setEditingLoan(null);
+
+  // total, on hold, available copies
+  useEffect(() => {
+    const allBooks = getBooks();
+    const allLoans = getLoans();
+    const allRequests = JSON.parse(localStorage.getItem("borrowRequests")) || [];
+
+    // Step 1: build on-hold copy count map
+    const holdCountMap = {};
+
+    // Count from loans
+    allLoans.forEach(loan => {
+      if (loan.status === "Active") {
+        holdCountMap[loan.bookId] = (holdCountMap[loan.bookId] || 0) + 1;
+      }
+    });
+
+    // Count from borrow requests
+    allRequests.forEach(req => {
+      req.bookIds.forEach(bookId => {
+        holdCountMap[bookId] = (holdCountMap[bookId] || 0) + 1;
+      });
+    });
+
+    // Step 2: apply onHoldCopies to books
+    const updatedBooks = allBooks.map(book => ({
+      ...book,
+      onHoldCopies: holdCountMap[book.id] || 0,
+    }));
+
+    // Step 3: save and set state
+    saveBooks(updatedBooks);
+    setBooks(updatedBooks);
+    setLoans(allLoans);
+    setRequests(allRequests);
+  }, []);
+
 
 return (
   <div className="max-w-2xl mx-auto p-4">
