@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 
 export default function LoanForm({ onSubmit, books, loan }) {
-  const [form, setForm] = useState(loan || {
+  const [form, setForm] = useState({
     bookId: "",
     memberName: "",
     loanDate: new Date().toISOString().split("T")[0],
@@ -9,6 +9,23 @@ export default function LoanForm({ onSubmit, books, loan }) {
     status: "Active",
   });
 
+  // This useEffect updates the form when loan prop changes (for editing)
+  useEffect(() => {
+    if (loan) {
+      setForm(loan);
+    } else {
+      // Clear form when no loan is being edited (for new loans)
+      setForm({
+        bookId: "",
+        memberName: "",
+        loanDate: new Date().toISOString().split("T")[0],
+        dueDate: "",
+        status: "Active",
+      });
+    }
+  }, [loan]);
+
+  // This useEffect calculates due date when loan date changes
   useEffect(() => {
     const date = new Date(form.loanDate);
     date.setDate(date.getDate() + 14);

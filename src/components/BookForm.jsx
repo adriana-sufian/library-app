@@ -1,9 +1,33 @@
 import { useState, useEffect } from "react";
 
 export default function BookForm({ onSubmit, book }) {
-  const [form, setForm] = useState(book || {
-    title: "", author: "", isbn: "", year: "", genre: "", copies: 1, available: true
+  const [form, setForm] = useState({
+    title: "", 
+    author: "", 
+    isbn: "", 
+    year: "", 
+    genre: "", 
+    copies: 1, 
+    available: true
   });
+
+  // updates the form when book prop changes
+  useEffect(() => {
+    if (book) {
+      setForm(book);
+    } else {
+      // Clear form when no book is being edited (for new books)
+      setForm({
+        title: "", 
+        author: "", 
+        isbn: "", 
+        year: "", 
+        genre: "", 
+        copies: 1, 
+        available: true
+      });
+    }
+  }, [book]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
