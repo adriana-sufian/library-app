@@ -1,0 +1,48 @@
+import { useState, useEffect } from "react";
+
+export default function LoanForm({ onSubmit, books, loan }) {
+  const [form, setForm] = useState(loan || {
+    bookId: "",
+    memberName: "",
+    loanDate: new Date().toISOString().split("T")[0],
+    dueDate: "",
+    status: "Active",
+  });
+
+  useEffect(() => {
+    const date = new Date(form.loanDate);
+    date.setDate(date.getDate() + 14);
+    setForm(f => ({ ...f, dueDate: date.toISOString().split("T")[0] }));
+  }, [form.loanDate]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm(f => ({ ...f, [name]: value }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!form.bookId || !form.memberName) return alert("Missing fields");
+    onSubmit(form);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="p-4 border rounded bg-white shadow space-y-4">
+      <select name="bookId" value={form.bookId} onChange={handleChange} required>
+        <option value="">Select Book</option>
+        {books.map(b => (
+          <option key={b.id} value={b.id}>{b.title}</option>
+        ))}
+      </select>
+      <input name="memberName" placeholder="Member Name" value={form.memberName} onChange={handleChange} required />
+      <input name="loanDate" type="date" value={form.loanDate} onChange={handleChange} required />
+      <input name="dueDate" type="date" value={form.dueDate} disabled />
+      <select name="status" value={form.status} onChange={handleChange}>
+        <option>Active</option>
+        <option>Returned</option>
+        <option>Overdue</option>
+      </select>
+      <button type="submit" className="bg-blue-500 text-white px-4 py-2">Save Loan</button>
+    </form>
+  );
+}
