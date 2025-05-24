@@ -153,3 +153,17 @@ export const seedBooks = () => {
 
   localStorage.setItem("books", JSON.stringify(sampleBooks));
 };
+
+// sample users
+export const seedUsers = () => {
+  const existing = JSON.parse(localStorage.getItem("users"));
+  if (existing && existing.length > 0) return;
+
+  const users = [
+    { role: "librarian", username: "admin", password: "admin123" },
+    { role: "member", cardNumber: "12345678", pin: "4321", name: "Adriana" },
+    { role: "member", cardNumber: "87654321", pin: "1234", name: "John" }
+  ];
+
+  localStorage.setItem("users", JSON.stringify(users));
+};
