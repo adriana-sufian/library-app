@@ -34,8 +34,30 @@ export default function BookForm({ onSubmit, book, onCancel }) {
     setForm(prev => ({ ...prev, [name]: type === "checkbox" ? checked : value }));
   };
 
+  // isbn validation
+  const isValidISBN10 = (isbn) => {
+    return /^[0-9]{9}[0-9Xx]$/.test(isbn.replace(/-/g, ""));
+  };
+
+  // year validation
+  const isValidYear = (year) => {
+    const currentYear = new Date().getFullYear();
+    return /^[0-9]{4}$/.test(year) && parseInt(year) <= currentYear;
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!form.title || !form.author || !form.genre || !form.year || !form.isbn || !form.totalCopies) {
+      return alert("Please fill in all required fields.");
+    }
+
+    if (!isValidISBN10(form.isbn)) {
+      return alert("Invalid ISBN-10. Must be 10 digits.");
+    }
+
+    if (!isValidYear(form.year)) {
+      return alert("Invalid year. Must be a valid 4-digit year.");
+    }
     onSubmit(form);
     // Reset form
     setForm({
