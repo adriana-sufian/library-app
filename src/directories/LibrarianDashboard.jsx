@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getBooks, saveBooks, recalculateBookHoldCounts } from "../utils/dataService";
+import { getBooks, saveBooks, recalculateBookHoldCounts, seedBooks } from "../utils/dataService";
 import { getLoans, saveLoans } from "../utils/loanService";
 import BookForm from "../components/BookForm";
 import BookList from "../components/BookList";
@@ -15,6 +15,7 @@ export default function LibrarianDashboard() {
   const [editingLoan, setEditingLoan] = useState(null);
 
   useEffect(() => {
+    seedBooks();
     setBooks(getBooks());
     setLoans(getLoans());
   }, []);
@@ -208,15 +209,27 @@ const handleApproveRequest = (request) => {
     setRequests(allRequests);
   }, []);
 
+  // sort book list by genre
+  const sortedBooks = [...books].sort((a, b) => {
+    return a.genre.localeCompare(b.genre);
+  });
+
+  // sort loan list by genre
+  const sortedLoans = [...loans].sort((a, b) => {
+  const genreA = books.find(book => book.id === a.bookId)?.genre || "";
+  const genreB = books.find(book => book.id === b.bookId)?.genre || "";
+    return genreA.localeCompare(genreB);
+  });
+
 
 return (
   <div className="max-w-2xl mx-auto p-4">
     <h1 className="text-2xl font-bold mb-4">Library Book Management</h1>
     <BookForm onSubmit={handleSave} book={editingBook} onCancel={handleCancelEdit}/>
-    <BookList books={books} onEdit={handleEdit} onDelete={handleDelete} />
+    <BookList books={sortedBooks} onEdit={handleEdit} onDelete={handleDelete} />
     <h2 className="text-xl font-semibold mt-8 mb-2">Loan Management</h2>
     <LoanForm onSubmit={handleSaveLoan} books={books} loan={editingLoan} onCancel={handleCancelLoanEdit}/>
-    <LoanList loans={loans} books={books} onEdit={setEditingLoan} onDelete={handleDeleteLoan} onReturn={handleReturnLoan} />
+    <LoanList loans={sortedLoans} books={books} onEdit={setEditingLoan} onDelete={handleDeleteLoan} onReturn={handleReturnLoan} />
     <h2 className="text-xl font-semibold mt-8 mb-2">Borrow Requests</h2>
     {requests.map((req) => (
       <div key={req.id} className="border p-4 rounded mb-2 bg-yellow-50">
