@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 
-export default function LoanForm({ onSubmit, books, loan }) {
+export default function LoanForm({ onSubmit, books, loan , onCancel
+}) {
   const [form, setForm] = useState({
     bookId: "",
     memberName: "",
@@ -59,7 +60,21 @@ export default function LoanForm({ onSubmit, books, loan }) {
         <option>Returned</option>
         <option>Overdue</option>
       </select>
-      <button type="submit" className="bg-blue-500 text-white px-4 py-2">Save Loan</button>
+      <button 
+      type="submit" 
+      className="bg-blue-500 text-white px-4 py-2"
+      >
+        {loan ? 'Update' : 'Add Loan'}
+      </button>
+      {loan && (
+        <button
+          type="button"
+          onClick={onCancel}
+          className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+          >
+            Cancel
+          </button>
+      )}
     </form>
   );
 }

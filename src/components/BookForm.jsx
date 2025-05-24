@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-export default function BookForm({ onSubmit, book }) {
+export default function BookForm({ onSubmit, book, onCancel }) {
   const [form, setForm] = useState({
     title: "", 
     author: "", 
@@ -50,7 +50,23 @@ export default function BookForm({ onSubmit, book }) {
       <label>
         <input type="checkbox" name="available" checked={form.available} onChange={handleChange} /> Available
       </label>
-      <button type="submit" className="bg-blue-500 text-white px-4 py-2">Save</button>
+      <div >
+        <button 
+          type="submit" 
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        >
+          {book ? 'Update' : 'Add Book'}
+        </button>
+        {book && (
+          <button 
+            type="button"
+            onClick={onCancel}
+            className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+          >
+            Cancel
+          </button>
+        )}
+      </div>
     </form>
   );
 }
